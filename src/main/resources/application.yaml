@@ -1,0 +1,71 @@
+grpc:
+  server:
+    port: ${GRPC_SERVER_PORT:9090}
+    security:
+      enabled: ${GRPC_SERVER_SECURITY:false}
+#  client:
+#    grpc-user-manager-service:
+#      address: static://localhost:9091
+#      negotiationType: plaintext
+
+security:
+  authentication:
+    jwt:
+      # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
+      secret: ${SECURITY_AUTHENTICATION_JWT_SECRET:OGEzMWZkOTQzYTI3ZjMwNTJmNTEwYjUwZjMxN2ZiOTljODgyODhkNTkwMzllYWIyYjVhOTMzNzZkYzM4MzI0NDFmMzJhNmQwZTExNjU3ZTBkZmNmZTY2MzlkYjVlZmNlMjI0M2Y3MWUzN2YwMjczYTU4YmFjZGU0M2MzNzZiNDc=}
+      # Token is valid 24 hours
+      token-validity-in-seconds: ${JWT_TOKEN_VALIDITY_IN_SECONDS:86400}
+      token-validity-in-seconds-for-remember-me: 2592000
+    permit-all:
+      - /api/v1/user/register
+      - /api/v1/user/login
+      - /actuator
+      - /graphiql
+      - /user-graphql
+    cross-origin:
+      - "*"
+    credentials: false
+    allowed-headers:
+      - Content-Type
+      - Authorization
+    allowed-methods:
+      - POST
+      - GET
+      - PUT
+      - DELETE
+      - OPTIONS
+
+server:
+  servlet:
+    context-path: /user-manager
+  port: ${APPLICATION_PORT:8080}
+spring:
+  application:
+    name: x-platform-user-service
+  graphql:
+    graphiql:
+      enabled: ${GRAPHIQL_ENABLED:true}
+    path: /user-graphql
+  datasource:
+    #    url: ${DATASOURCE_URL:jdbc:postgresql://postgres:5432/user-manager}
+    #    username: ${POSTGRES_USERNAME:root}
+    #    password: ${POSTGRES_PASSWORD:root}
+    #    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 50000
+      max-lifetime: 900000
+      minimum-idle: 1
+      pool-name: '${spring.application.name}-pool'
+      maximum-pool-size: 20
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:create-drop}
+      properties:
+        org:
+          hibernate:
+            flushMode: ALWAYS
+    #    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
