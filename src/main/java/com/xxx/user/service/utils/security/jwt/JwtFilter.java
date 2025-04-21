@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @RequiredArgsConstructor
 public class JwtFilter extends GenericFilterBean {
@@ -22,7 +23,12 @@ public class JwtFilter extends GenericFilterBean {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         String jwt = resolveToken(httpServletRequest);
         if (StringUtils.hasText(jwt) && this.tokenProvider.validateToken(jwt)) {
-            Authentication authentication = this.tokenProvider.getAuthentication(jwt);
+            Authentication authentication = null;
+            try {
+                authentication = this.tokenProvider.getAuthentication(jwt);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(servletRequest, servletResponse);

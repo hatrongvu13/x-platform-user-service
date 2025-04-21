@@ -23,7 +23,12 @@
         <os.maven.plugin.version>1.7.1</os.maven.plugin.version>
         <grpc.spring.version>3.1.0.RELEASE</grpc.spring.version>
         <protobuf.java.util.version>4.30.2</protobuf.java.util.version>
-        <io.jsonwebtoken>0.11.5</io.jsonwebtoken>
+        <nimbus-jwt>10.2</nimbus-jwt>
+        <commons-io>2.16.1</commons-io>
+        <commons-lang3>3.17.0</commons-lang3>
+        <commons-collections4>4.4</commons-collections4>
+        <modelmapper.version>3.0.0</modelmapper.version>
+        <x-platform-proto>0.0.3</x-platform-proto>
     </properties>
 
     <repositories>
@@ -97,44 +102,34 @@
             <version>${protobuf.java.util.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>${io.jsonwebtoken}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>${io.jsonwebtoken}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>${io.jsonwebtoken}</version>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jwt}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.16.1</version>
+            <version>${commons-io}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
+            <version>${commons-lang3}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>${commons-collections4}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>${modelmapper.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xxx</groupId>
             <artifactId>x-platform-proto</artifactId>
-            <version>0.0.3</version>
+            <version>${x-platform-proto}</version>
         </dependency>
     </dependencies>
 

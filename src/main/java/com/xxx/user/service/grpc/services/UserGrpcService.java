@@ -4,6 +4,7 @@ import com.xxx.user.grpc.*;
 import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.UserRepository;
 import io.grpc.stub.StreamObserver;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -83,13 +84,24 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
     }
 
     @Override
+    @Transactional
     public void deleteUser(UserGrpcInput request, StreamObserver<UserGrpcResponse> responseObserver) {
-        super.deleteUser(request, responseObserver);
+
     }
 
     @Override
     public void registerUser(UserGrpcRegister request, StreamObserver<UserGrpcResponse> responseObserver) {
-        super.registerUser(request, responseObserver);
+        if (userRepository.existsByUsername(request.getUsername()) || userRepository.existsByEmail(request.getEmail())) {
+            responseObserver.onNext(UserGrpcResponse.newBuilder().setMessage("Error").build());
+        } else {
+            UserEntity user = new UserEntity();
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+            user.setPassword(request.getPassword());
+            userRepository.save(user);
+            responseObserver.onNext(UserGrpcResponse.newBuilder().setMessage("Success").build());
+        }
+        responseObserver.onCompleted();
     }
 
     private void paginationUser(UserGrpcInput userInput, StreamObserver<UserGrpcResponse> responseObserver, long currentPage, long pageSize) {
