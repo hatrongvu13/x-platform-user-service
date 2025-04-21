@@ -27,6 +27,7 @@
         <commons-io>2.16.1</commons-io>
         <commons-lang3>3.17.0</commons-lang3>
         <commons-collections4>4.4</commons-collections4>
+        <modelmapper.version>3.0.0</modelmapper.version>
         <x-platform-proto>0.0.3</x-platform-proto>
     </properties>
 
@@ -119,6 +120,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>${commons-collections4}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>${modelmapper.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xxx</groupId>

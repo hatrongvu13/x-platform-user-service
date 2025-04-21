@@ -17,8 +17,8 @@ security:
       token-validity-in-seconds: ${JWT_TOKEN_VALIDITY_IN_SECONDS:86400}
       token-validity-in-seconds-for-remember-me: 2592000
     permit-all:
-      - /api/v1/user/register
-      - /api/v1/user/login
+      - /api/user/register
+      - /api/user/login
       - /actuator
       - /graphiql
       - /user-graphql
