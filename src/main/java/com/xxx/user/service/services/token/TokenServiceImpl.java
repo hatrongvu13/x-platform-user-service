@@ -1,5 +1,6 @@
 package com.xxx.user.service.services.token;
 
+import com.nimbusds.jose.JOSEException;
 import com.xxx.user.service.data.user.UserAuthentication;
 import com.xxx.user.service.utils.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +16,12 @@ import java.util.stream.Collectors;
 public class TokenServiceImpl implements TokenService {
     private final TokenProvider tokenProvider;
     @Override
-    public String createToken(String username, String email) {
+    public String createToken(String username, String email) throws JOSEException {
         return createToken(username, email, List.of());
     }
 
     @Override
-    public String createToken(String username, String email, List<String> roles) {
+    public String createToken(String username, String email, List<String> roles) throws JOSEException {
         Set<SimpleGrantedAuthority> authorities = createAuthorities(roles);
         return tokenProvider.createToken(new UserAuthentication(null, username, email, authorities), false);
     }

@@ -42,6 +42,11 @@ server:
 spring:
   application:
     name: x-platform-user-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9000/oauth2/jwks
   graphql:
     graphiql:
       enabled: ${GRAPHIQL_ENABLED:true}
