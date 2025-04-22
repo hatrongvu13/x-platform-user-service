@@ -7,6 +7,4 @@ public interface PermissionService {
     Permission save(Permission permission);
     Permission update(Permission permission);
     Permission delete(Long id);
-
-    void initPermission();
 }

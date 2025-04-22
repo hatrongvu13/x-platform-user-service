@@ -46,10 +46,5 @@ public class PermissionServiceImpl implements PermissionService {
         return null;
     }
 
-    @Override
-    public void initPermission() {
-
-    }
-
 
 }
