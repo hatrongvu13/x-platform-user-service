@@ -31,11 +31,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleEntity> findAllByUserId(Long userId) {
-        return roleRepository.findAllByUserId(userId);
-    }
-
-    @Override
     public void initRole() {
         PermissionEntity permissionEntity = new PermissionEntity();
         permissionEntity.setValue("EDIT");

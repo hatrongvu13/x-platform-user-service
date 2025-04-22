@@ -17,10 +17,4 @@ public class PermissionRestController {
     public ResponseEntity<?> createPermission(@RequestBody Permission permission) throws JOSEException {
         return ResponseEntity.ok(permissionService.save(permission));
     }
-
-    @PutMapping("/init")
-    public ResponseEntity<?> initPermission() throws JOSEException {
-        permissionService.initPermission();
-        return ResponseEntity.ok(null);
-    }
 }

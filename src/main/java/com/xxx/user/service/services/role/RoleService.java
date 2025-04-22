@@ -8,6 +8,5 @@ public interface RoleService {
     RoleEntity create(RoleEntity role);
     RoleEntity findById(Long id);
     List<RoleEntity> findAll();
-    List<RoleEntity> findAllByUserId(Long userId);
     void initRole();
 }

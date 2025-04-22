@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,7 +25,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
-    private final String secret;
     private final byte[] secretBytes;
     private final long tokenValidityInMilliseconds;
     private final long tokenValidityInMillisecondsForRememberMe;
@@ -34,7 +32,6 @@ public class TokenProvider {
     public TokenProvider(@Value("${security.authentication.jwt.secret}") String secret,
                          @Value("${security.authentication.jwt.token-validity-in-seconds}") long tokenValidityInMilliseconds,
                          @Value("${security.authentication.jwt.token-validity-in-seconds-for-remember-me}") long tokenValidityInMillisecondsForRememberMe) {
-        this.secret = secret;
         this.secretBytes = !ObjectUtils.isEmpty(secret) ? Base64.getDecoder().decode(secret) : secret.getBytes(StandardCharsets.UTF_8);
         this.tokenValidityInMilliseconds = tokenValidityInMilliseconds * 1000;
         this.tokenValidityInMillisecondsForRememberMe = tokenValidityInMillisecondsForRememberMe * 1000;
