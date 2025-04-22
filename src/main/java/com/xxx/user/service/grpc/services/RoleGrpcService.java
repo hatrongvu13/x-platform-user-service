@@ -8,6 +8,7 @@ import com.xxx.user.service.database.repository.RoleRepository;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.advice.GrpcAdvice;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
@@ -17,6 +18,7 @@ public class RoleGrpcService extends RoleGrpcServiceGrpc.RoleGrpcServiceImplBase
     private final RoleRepository roleRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public void findRole(RoleGrpc request, StreamObserver<RoleGrpcResponse> responseObserver) {
         RoleEntity roleEntity = roleRepository.findById(request.getRoleId()).orElse(null);
         if (Objects.isNull(roleEntity)) {
@@ -39,6 +41,7 @@ public class RoleGrpcService extends RoleGrpcServiceGrpc.RoleGrpcServiceImplBase
     }
 
     @Override
+    @Transactional(readOnly = true)
     public StreamObserver<RoleGrpc> findRoleStream(StreamObserver<RoleGrpcResponse> responseObserver) {
         return new StreamObserver<RoleGrpc>() {
 
@@ -60,11 +63,16 @@ public class RoleGrpcService extends RoleGrpcServiceGrpc.RoleGrpcServiceImplBase
     }
 
     @Override
+    @Transactional
     public void createRole(RoleGrpc request, StreamObserver<RoleGrpcResponse> responseObserver) {
         RoleEntity roleEntity = new RoleEntity();
+        buildRoleGrpc(request, responseObserver, roleEntity);
+    }
+
+    private void buildRoleGrpc(RoleGrpc request, StreamObserver<RoleGrpcResponse> responseObserver, RoleEntity roleEntity) {
         roleEntity.setCode(request.getCode());
         roleEntity.setValue(request.getValue());
-        roleEntity = roleRepository.save(roleEntity);
+        roleRepository.save(roleEntity);
         responseObserver.onNext(RoleGrpcResponse
                 .newBuilder()
                         .addData(RoleGrpc
@@ -85,19 +93,7 @@ public class RoleGrpcService extends RoleGrpcServiceGrpc.RoleGrpcServiceImplBase
             responseObserver.onCompleted();
             return;
         }
-        roleEntity.setCode(request.getCode());
-        roleEntity.setValue(request.getValue());
-        roleRepository.save(roleEntity);
-        responseObserver.onNext(RoleGrpcResponse
-                .newBuilder()
-                .addData(RoleGrpc
-                        .newBuilder()
-                        .setRoleId(roleEntity.getId())
-                        .setCode(roleEntity.getCode())
-                        .setValue(roleEntity.getValue())
-                        .build())
-                .build());
-        responseObserver.onCompleted();
+        buildRoleGrpc(request, responseObserver, roleEntity);
     }
 
     @Override
