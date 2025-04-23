@@ -6,6 +6,7 @@ import com.xxx.user.service.annotation.PublicGrpc;
 import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.UserRepository;
 import com.xxx.user.service.services.token.TokenService;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -107,6 +108,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
             UserEntity user = new UserEntity();
             user.setUsername(request.getUsername());
             user.setEmail(request.getEmail());
+            user.setFullName(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
             try {
@@ -123,18 +125,17 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
     public void loginUser(UserLoginGrpcInput request, StreamObserver<UserTokenGrpc> responseObserver) {
         UserEntity user = userRepository.findByUsername(request.getUsername()).orElse(null);
         if (Objects.isNull(user)) {
-            responseObserver.onError(new RuntimeException("Username or Password wrong"));
-            responseObserver.onCompleted();
+            responseObserver.onError(Status.UNAUTHENTICATED.withDescription("Username or Email already in use").asRuntimeException());
             return;
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            responseObserver.onError(new RuntimeException("Wrong password"));
-            responseObserver.onCompleted();
+            responseObserver.onError(Status.UNAUTHENTICATED.withDescription("Wrong password").asRuntimeException());
             return;
         }
         try {
             responseObserver.onNext(UserTokenGrpc.newBuilder().setToken(tokenService.createToken(user.getUsername(), user.getEmail())).build());
         } catch (JOSEException e) {
+            responseObserver.onError(Status.INTERNAL.withDescription("Token generation failed").asRuntimeException());
             log.error("Error log in user", e);
         }
         responseObserver.onCompleted();
