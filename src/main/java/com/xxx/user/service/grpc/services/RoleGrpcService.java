@@ -7,12 +7,12 @@ import com.xxx.user.service.database.entity.RoleEntity;
 import com.xxx.user.service.database.repository.RoleRepository;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
-import net.devh.boot.grpc.server.advice.GrpcAdvice;
+import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
-@GrpcAdvice
+@GrpcService
 @RequiredArgsConstructor
 public class RoleGrpcService extends RoleGrpcServiceGrpc.RoleGrpcServiceImplBase {
     private final RoleRepository roleRepository;

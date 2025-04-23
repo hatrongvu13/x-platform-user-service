@@ -1,25 +1,34 @@
 package com.xxx.user.service.grpc.services;
 
+import com.nimbusds.jose.JOSEException;
 import com.xxx.user.grpc.*;
+import com.xxx.user.service.annotation.PublicGrpc;
 import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.UserRepository;
+import com.xxx.user.service.services.token.TokenService;
 import io.grpc.stub.StreamObserver;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @GrpcService
 @RequiredArgsConstructor
 public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase {
     private final UserRepository userRepository;
+    private final TokenService tokenService;
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public void findUser(UserGrpcInput request, StreamObserver<UserGrpcResponse> responseObserver) {
         long currentPage = 1;
@@ -90,16 +99,43 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
     }
 
     @Override
-    public void registerUser(UserGrpcRegister request, StreamObserver<UserGrpcResponse> responseObserver) {
+    @PublicGrpc
+    public void registerUser(UserGrpcRegister request, StreamObserver<UserTokenGrpc> responseObserver) {
         if (userRepository.existsByUsername(request.getUsername()) || userRepository.existsByEmail(request.getEmail())) {
-            responseObserver.onNext(UserGrpcResponse.newBuilder().setMessage("Error").build());
+            responseObserver.onError(new RuntimeException("Username or Email already in use"));
         } else {
             UserEntity user = new UserEntity();
             user.setUsername(request.getUsername());
             user.setEmail(request.getEmail());
-            user.setPassword(request.getPassword());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(user);
-            responseObserver.onNext(UserGrpcResponse.newBuilder().setMessage("Success").build());
+            try {
+                responseObserver.onNext(UserTokenGrpc.newBuilder().setToken(tokenService.createToken(user.getUsername(), user.getEmail())).build());
+            } catch (JOSEException e) {
+                log.error("Error registering user", e);
+            }
+        }
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    @PublicGrpc
+    public void loginUser(UserLoginGrpcInput request, StreamObserver<UserTokenGrpc> responseObserver) {
+        UserEntity user = userRepository.findByUsername(request.getUsername()).orElse(null);
+        if (Objects.isNull(user)) {
+            responseObserver.onError(new RuntimeException("Username or Password wrong"));
+            responseObserver.onCompleted();
+            return;
+        }
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            responseObserver.onError(new RuntimeException("Wrong password"));
+            responseObserver.onCompleted();
+            return;
+        }
+        try {
+            responseObserver.onNext(UserTokenGrpc.newBuilder().setToken(tokenService.createToken(user.getUsername(), user.getEmail())).build());
+        } catch (JOSEException e) {
+            log.error("Error log in user", e);
         }
         responseObserver.onCompleted();
     }
