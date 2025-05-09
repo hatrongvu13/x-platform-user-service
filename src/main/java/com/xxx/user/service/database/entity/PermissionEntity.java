@@ -11,8 +11,8 @@ import lombok.*;
 @NoArgsConstructor
 @Table(name = "permissions")
 public class PermissionEntity extends BaseEntity {
-    @Column(name = "code")
+    @Column(name = "permission_code")
     private String code;
-    @Column(name = "value")
+    @Column(name = "permission_value")
     private String value;
 }

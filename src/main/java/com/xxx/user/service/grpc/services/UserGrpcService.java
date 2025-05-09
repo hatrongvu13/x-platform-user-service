@@ -125,7 +125,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
     public void loginUser(UserLoginGrpcInput request, StreamObserver<UserTokenGrpc> responseObserver) {
         UserEntity user = userRepository.findByUsername(request.getUsername()).orElse(null);
         if (Objects.isNull(user)) {
-            responseObserver.onError(Status.UNAUTHENTICATED.withDescription("Username or Email already in use").asRuntimeException());
+            responseObserver.onError(Status.UNAUTHENTICATED.withDescription("Wrong Username or Password").asRuntimeException());
             return;
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
