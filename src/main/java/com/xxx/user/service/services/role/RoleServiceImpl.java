@@ -1,5 +1,6 @@
 package com.xxx.user.service.services.role;
 
+import com.xxx.user.service.data.role.Role;
 import com.xxx.user.service.database.entity.PermissionEntity;
 import com.xxx.user.service.database.entity.RoleEntity;
 import com.xxx.user.service.database.repository.RoleRepository;
@@ -16,8 +17,12 @@ public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
 
     @Override
-    public RoleEntity create(RoleEntity role) {
-        return roleRepository.save(role);
+    public RoleEntity create(Role role) {
+        RoleEntity roleEntity = new RoleEntity();
+        roleEntity.setCode(role.code());
+        roleEntity.setValue(role.value());
+
+        return roleRepository.save(roleEntity);
     }
 
     @Override
