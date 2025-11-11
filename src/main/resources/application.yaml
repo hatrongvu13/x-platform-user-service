@@ -42,20 +42,15 @@ server:
 spring:
   application:
     name: x-platform-user-service
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://localhost:9000/oauth2/jwks
   graphql:
     graphiql:
       enabled: ${GRAPHIQL_ENABLED:true}
     path: /user-graphql
   datasource:
-    #    url: ${DATASOURCE_URL:jdbc:postgresql://postgres:5432/user-manager}
-    #    username: ${POSTGRES_USERNAME:root}
-    #    password: ${POSTGRES_PASSWORD:root}
-    #    driver-class-name: org.postgresql.Driver
+    url: ${DATASOURCE_URL:jdbc:postgresql://postgres:5432/x_user_manager}
+    username: ${POSTGRES_USERNAME:root}
+    password: ${POSTGRES_PASSWORD:root}
+    driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 50000
       max-lifetime: 900000
@@ -69,7 +64,6 @@ spring:
         org:
           hibernate:
             flushMode: ALWAYS
-    #    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:

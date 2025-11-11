@@ -28,7 +28,7 @@
         <commons-lang3>3.17.0</commons-lang3>
         <commons-collections4>4.4</commons-collections4>
         <modelmapper.version>3.0.0</modelmapper.version>
-        <x-platform-proto>0.0.3</x-platform-proto>
+        <x-platform-proto>0.0.1</x-platform-proto>
     </properties>
 
     <repositories>

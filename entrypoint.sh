@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/sh
+echo "Starting with java:"
+java -version
 mkdir -p /otp/service/resources
 
 if [ -z "$(ls -A /otp/service/resources)" ]; then
@@ -8,4 +10,4 @@ else
   echo "✅ Thư mục /otp/service/resources đã có dữ liệu."
 fi
 
-exec java -jar app.jar
+exec java -jar /opt/service/app.jar

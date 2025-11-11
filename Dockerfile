@@ -1,4 +1,4 @@
-FROM openjdk:17
+FROM eclipse-temurin:21-jre-alpine
 
 LABEL authors="hatrongvu"
 
@@ -8,12 +8,14 @@ COPY /target/*.jar /opt/service/app.jar
 
 COPY /src/main/resources /opt/service/resources_default
 
-COPY entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh entrypoint.sh
 
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /opt/service/entrypoint.sh
 
 RUN chgrp -R 0 ./ && chmod -R g=u ./
 
 RUN ls -l /
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN cat /opt/service/entrypoint.sh
+
+ENTRYPOINT ["sh","/opt/service/entrypoint.sh"]

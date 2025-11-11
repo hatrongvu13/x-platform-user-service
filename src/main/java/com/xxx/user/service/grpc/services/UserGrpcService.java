@@ -1,8 +1,11 @@
 package com.xxx.user.service.grpc.services;
 
+import com.nimbusds.jose.JOSEException;
 import com.xxx.user.grpc.*;
+import com.xxx.user.service.annotation.PublicGrpc;
 import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.UserRepository;
+import com.xxx.user.service.services.token.TokenService;
 import io.grpc.stub.StreamObserver;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +24,33 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
+
     @Override
     public void findUser(UserGrpcInput request, StreamObserver<UserGrpcResponse> responseObserver) {
         long currentPage = 1;
         long pageSize = 10;
         paginationUser(request, responseObserver, currentPage, pageSize);
+        responseObserver.onCompleted();
+    }
+
+    @PublicGrpc
+    @Override
+    public void loginUser(UserLoginGrpcInput request, StreamObserver<UserTokenGrpc> responseObserver) {
+        UserEntity user = userRepository.findByUsername(request.getUsername()).orElse(null);
+        if (Objects.isNull(user)) {
+            responseObserver.onNext(UserTokenGrpc.newBuilder().build());
+        } else {
+            if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                try {
+                    responseObserver.onNext(UserTokenGrpc.newBuilder().setToken(tokenService.createToken(user.getUsername(), user.getEmail())).build());
+                } catch (JOSEException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
         responseObserver.onCompleted();
     }
 
@@ -89,28 +115,23 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
 
     }
 
+    @PublicGrpc
     @Override
-    public void registerUser(UserGrpcRegister request, StreamObserver<UserGrpcResponse> responseObserver) {
+    public void registerUser(UserGrpcRegister request, StreamObserver<UserTokenGrpc> responseObserver) {
         if (userRepository.existsByUsername(request.getUsername()) || userRepository.existsByEmail(request.getEmail())) {
-            responseObserver.onNext(UserGrpcResponse.newBuilder().setMessage("Error").build());
+            responseObserver.onNext(UserTokenGrpc.newBuilder().build());
         } else {
             UserEntity user = new UserEntity();
             user.setUsername(request.getUsername());
             user.setEmail(request.getEmail());
             user.setPassword(request.getPassword());
             userRepository.save(user);
-            responseObserver.onNext(UserGrpcResponse.newBuilder().setMessage("Success").build());
+            responseObserver.onNext(UserTokenGrpc.newBuilder().build());
         }
         responseObserver.onCompleted();
     }
 
     private void paginationUser(UserGrpcInput userInput, StreamObserver<UserGrpcResponse> responseObserver, long currentPage, long pageSize) {
-        if (userInput.getCurrentPage() > 0) {
-            currentPage = userInput.getCurrentPage();
-        }
-        if (userInput.getPageSize() > 0) {
-            pageSize = userInput.getPageSize();
-        }
         Pageable pageable = PageRequest.of((int) currentPage, (int) pageSize, Sort.Direction.DESC);
         List<UserEntity> userEntities = userRepository
                 .findAllByUsernameInOrEmailIn(
@@ -141,8 +162,6 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
                 .newBuilder()
                 .setMessage("Success")
                 .addAllData(userList)
-                .setCurrentPage(pageable.getPageNumber())
-                .setTotalRecord((long) pageable.getPageNumber() * pageable.getPageSize())
                 .build());
     }
 }
