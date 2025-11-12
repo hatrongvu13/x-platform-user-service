@@ -125,6 +125,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
             user.setUsername(request.getUsername());
             user.setEmail(request.getEmail());
             user.setPassword(request.getPassword());
+            user.setFullName(request.getFullName());
             userRepository.save(user);
             responseObserver.onNext(UserTokenGrpc.newBuilder().build());
         }

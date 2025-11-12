@@ -37,7 +37,7 @@ jobs:
 
       - name: Build with Maven
         run: |
-          mvn clean install -DskipTests=true -B -X -e
+          mvn clean install -DskipTests=true
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_CUSTOM }}
 
