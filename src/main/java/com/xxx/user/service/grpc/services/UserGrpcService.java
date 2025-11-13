@@ -46,7 +46,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
                 try {
                     responseObserver.onNext(UserTokenGrpc.newBuilder().setToken(tokenService.createToken(user.getUsername(), user.getEmail())).build());
                 } catch (JOSEException e) {
-                    throw new RuntimeException(e);
+                    responseObserver.onError(e);
                 }
             }
         }
@@ -112,7 +112,17 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
     @Override
     @Transactional
     public void deleteUser(UserGrpcInput request, StreamObserver<UserGrpcResponse> responseObserver) {
-
+        if (CollectionUtils.isEmpty(request.getUsernameList())) {
+            responseObserver.onCompleted();
+        }
+        for (String username : request.getUsernameList()) {
+            UserEntity user = userRepository.findByUsername(username).orElse(null);
+            if (Objects.nonNull(user)) {
+                userRepository.delete(user);
+                responseObserver.onNext(UserGrpcResponse.newBuilder().setMessage(username).build());
+            }
+        }
+        responseObserver.onCompleted();
     }
 
     @PublicGrpc
@@ -127,7 +137,11 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
             user.setPassword(request.getPassword());
             user.setFullName(request.getFullName());
             userRepository.save(user);
-            responseObserver.onNext(UserTokenGrpc.newBuilder().build());
+            try {
+                responseObserver.onNext(UserTokenGrpc.newBuilder().setToken(tokenService.createToken(user.getUsername(), user.getEmail())).build());
+            } catch (JOSEException e) {
+                responseObserver.onError(e);
+            }
         }
         responseObserver.onCompleted();
     }
