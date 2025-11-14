@@ -1,6 +1,6 @@
 grpc:
   server:
-    port: ${GRPC_SERVER_PORT:9090}
+    port: ${GRPC_SERVER_PORT:9092}
     security:
       enabled: ${GRPC_SERVER_SECURITY:false}
 #  client:
@@ -47,10 +47,10 @@ spring:
       enabled: ${GRAPHIQL_ENABLED:true}
     path: /user-graphql
   datasource:
-    url: ${DATASOURCE_URL:jdbc:postgresql://postgres:5432/x_user_manager}
-    username: ${POSTGRES_USERNAME:root}
-    password: ${POSTGRES_PASSWORD:root}
-    driver-class-name: org.postgresql.Driver
+#    url: ${DATASOURCE_URL:jdbc:postgresql://:5432/x_user_manager}
+#    username: ${POSTGRES_USERNAME:root}
+#    password: ${POSTGRES_PASSWORD:root}
+#    driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 50000
       max-lifetime: 900000

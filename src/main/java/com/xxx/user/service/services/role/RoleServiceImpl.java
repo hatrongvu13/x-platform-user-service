@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -17,21 +16,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
-
-    @Override
-    public RoleEntity create(RoleEntity role) {
-        return roleRepository.save(role);
-    }
-
-    @Override
-    public RoleEntity findById(Long id) {
-        return roleRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    public List<RoleEntity> findAll() {
-        return roleRepository.findAll();
-    }
 
     @Override
     @Transactional
@@ -70,7 +54,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleEntity findByRoleName(String roleName) {
-        return roleRepository.findByCode(roleName).orElse(null);
+    public void addUserRoleDefault(Long userid) {
+
     }
 }

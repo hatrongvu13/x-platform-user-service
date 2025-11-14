@@ -2,6 +2,7 @@ package com.xxx.user.service.grpc.services;
 
 import com.htv.proto.user.*;
 import com.nimbusds.jose.JOSEException;
+import com.xxx.user.service.annotation.PublicGrpc;
 import com.xxx.user.service.database.entity.RoleEntity;
 import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.UserRepository;
@@ -127,6 +128,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
         };
     }
 
+    @PublicGrpc
     @Override
     public void registerUser(UserRegisterGrpc request, StreamObserver<JwtGrpc> responseObserver) {
         if (StringUtils.isBlank(request.getUsername()) && StringUtils.isBlank(request.getEmail())) {
@@ -144,7 +146,6 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
         userEntity.setEmail(request.getEmail());
         userEntity.setFullName(request.getFullName());
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
-        userEntity.setRoles(Set.of((roleService.findByRoleName("USER"))));
         userRepository.save(userEntity);
 
         try {
@@ -155,6 +156,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
         responseObserver.onCompleted();
     }
 
+    @PublicGrpc
     @Override
     public void loginUser(UserLoginGrpc request, StreamObserver<JwtGrpc> responseObserver) {
         if (StringUtils.isBlank(request.getUsername()) && StringUtils.isBlank(request.getEmail())) {
