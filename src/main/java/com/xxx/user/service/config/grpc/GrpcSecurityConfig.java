@@ -1,4 +1,4 @@
-package com.xxx.user.service.config;
+package com.xxx.user.service.config.grpc;
 
 import com.xxx.user.service.utils.security.grpc.GrpcClientJwtInterceptor;
 import com.xxx.user.service.utils.security.grpc.GrpcServerJwtInterceptor;

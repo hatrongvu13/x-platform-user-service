@@ -1,5 +1,6 @@
-package com.xxx.user.service.config;
+package com.xxx.user.service.config.web;
 
+import com.xxx.user.service.config.properties.SecurityProperties;
 import com.xxx.user.service.utils.security.TokenProvider;
 import com.xxx.user.service.utils.security.jwt.JwtAuthentication;
 import com.xxx.user.service.utils.security.jwt.JwtFilter;
@@ -26,7 +27,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class WebSecurityConfig {
     private final TokenProvider tokenProvider;
     private final JwtAuthentication authentication;
-    private final SecurityPropertiesConfig securityPropertiesConfig;
+    private final SecurityProperties securityProperties;
 
 
     @Bean
@@ -40,8 +41,8 @@ public class WebSecurityConfig {
                         exceptionHandling.authenticationEntryPoint(authentication))
                 .authorizeHttpRequests(authentication ->
                         {
-                            if (!CollectionUtils.isEmpty(securityPropertiesConfig.getPermitAll())) {
-                                securityPropertiesConfig.getPermitAll().forEach(securityPermit -> authentication.requestMatchers(securityPermit).permitAll());
+                            if (!CollectionUtils.isEmpty(securityProperties.getPermitAll())) {
+                                securityProperties.getPermitAll().forEach(securityPermit -> authentication.requestMatchers(securityPermit).permitAll());
                             }
                             authentication.anyRequest().authenticated();
                         }
@@ -60,14 +61,14 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        if (securityPropertiesConfig.getCrossOrigin().size() == 1) {
-            configuration.setAllowedOrigins(securityPropertiesConfig.getCrossOrigin());
+        if (securityProperties.getCrossOrigin().size() == 1) {
+            configuration.setAllowedOrigins(securityProperties.getCrossOrigin());
         } else {
-            configuration.addAllowedOrigin(securityPropertiesConfig.crossOrigin.get(0));
+            configuration.addAllowedOrigin(securityProperties.getCrossOrigin().get(0));
         }
-        configuration.setAllowedMethods(securityPropertiesConfig.getAllowedMethods());
-        configuration.setAllowedHeaders(securityPropertiesConfig.getAllowedHeaders());
-        configuration.setAllowCredentials(securityPropertiesConfig.credentials);
+        configuration.setAllowedMethods(securityProperties.getAllowedMethods());
+        configuration.setAllowedHeaders(securityProperties.getAllowedHeaders());
+        configuration.setAllowCredentials(securityProperties.isCredentials());
         configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

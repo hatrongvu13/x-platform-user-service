@@ -9,4 +9,5 @@ public interface RoleService {
     RoleEntity findById(Long id);
     List<RoleEntity> findAll();
     void initRole();
+    RoleEntity findByRoleName(String roleName);
 }

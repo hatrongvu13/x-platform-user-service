@@ -13,9 +13,11 @@ import java.util.Set;
 @NoArgsConstructor
 @Table(name = "roles")
 public class RoleEntity extends BaseEntity {
+    @Column(name = "role_code")
     private String code;
+    @Column(name = "role_value")
     private String value;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "role_permissions",
             joinColumns = @JoinColumn(name = "role_id"),

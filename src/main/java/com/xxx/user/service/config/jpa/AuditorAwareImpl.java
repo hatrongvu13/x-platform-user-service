@@ -1,4 +1,4 @@
-package com.xxx.user.service.config;
+package com.xxx.user.service.config.jpa;
 
 import com.xxx.user.service.utils.security.SecurityUtils;
 import org.springframework.data.domain.AuditorAware;

@@ -1,4 +1,4 @@
-package com.xxx.user.service.config;
+package com.xxx.user.service.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @Component
 @ConfigurationProperties(prefix = "security.authentication")
-public class SecurityPropertiesConfig {
+public class SecurityProperties {
     List<String> permitAll = new ArrayList<>();
     List<String> crossOrigin = new ArrayList<>();
     boolean credentials;

@@ -4,12 +4,15 @@ import com.xxx.user.service.database.entity.PermissionEntity;
 import com.xxx.user.service.database.entity.RoleEntity;
 import com.xxx.user.service.database.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
@@ -31,7 +34,12 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void initRole() {
+        if (!roleRepository.findAll().isEmpty()) {
+            log.info("Ignore init role");
+        }
+        log.info("Init role");
         PermissionEntity permissionEntity = new PermissionEntity();
         permissionEntity.setValue("EDIT");
         permissionEntity.setCode("EDIT");
@@ -58,5 +66,11 @@ public class RoleServiceImpl implements RoleService {
         permissionEntities1.add(permissionEntity1);
         roleEntity1.setPermissions(permissionEntities1);
         roleRepository.save(roleEntity1);
+        log.info("End init role");
+    }
+
+    @Override
+    public RoleEntity findByRoleName(String roleName) {
+        return roleRepository.findByCode(roleName).orElse(null);
     }
 }
