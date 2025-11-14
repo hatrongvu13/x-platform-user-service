@@ -10,6 +10,7 @@ import com.xxx.user.service.services.role.RoleService;
 import com.xxx.user.service.services.token.TokenService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -130,6 +131,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
 
     @PublicGrpc
     @Override
+    @Transactional
     public void registerUser(UserRegisterGrpc request, StreamObserver<JwtGrpc> responseObserver) {
         if (StringUtils.isBlank(request.getUsername()) && StringUtils.isBlank(request.getEmail())) {
             responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("UserRegisterGrpc username and email is empty").asRuntimeException());
@@ -147,6 +149,8 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
         userEntity.setFullName(request.getFullName());
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(userEntity);
+
+        roleService.addUserRoleDefault(userEntity.getId());
 
         try {
             responseObserver.onNext(JwtGrpc.newBuilder().setToken(tokenService.createToken(request.getUsername(), request.getEmail(), Collections.singletonList("USER"))).build());

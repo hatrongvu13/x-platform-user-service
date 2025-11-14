@@ -2,7 +2,9 @@ package com.xxx.user.service.services.role;
 
 import com.xxx.user.service.database.entity.PermissionEntity;
 import com.xxx.user.service.database.entity.RoleEntity;
+import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.RoleRepository;
+import com.xxx.user.service.database.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -54,7 +57,28 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public void addUserRoleDefault(Long userid) {
+        UserEntity userEntity = userRepository.findById(userid).orElse(null);
+        if (userEntity == null) {
+            return;
+        }
+        RoleEntity roleEntity = roleRepository.findByCode("USER").orElse(null);
+        if (roleEntity == null) {
+            roleEntity = new RoleEntity();
+            roleEntity.setCode("USER");
+            roleEntity.setValue("USER");
+            PermissionEntity permissionEntity = new PermissionEntity();
+            permissionEntity.setValue("EDIT");
+            permissionEntity.setCode("EDIT");
+            PermissionEntity permissionEntity1 = new PermissionEntity();
+            permissionEntity1.setValue("VIEW");
+            permissionEntity1.setCode("VIEW");
+            roleEntity.setPermissions(Set.of(permissionEntity, permissionEntity1));
+        }
 
+        userEntity.setRoles(Set.of(roleEntity));
+
+        userRepository.save(userEntity);
     }
 }

@@ -18,6 +18,5 @@ public class ApplicationStartupListener {
     public void onApplicationReady() {
         log.info("ApplicationStartupListener init Role and permission");
         roleService.initRole();
-        log.info("");
     }
 }
