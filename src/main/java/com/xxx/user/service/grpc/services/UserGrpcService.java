@@ -44,7 +44,8 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
 
             @Override
             public void onCompleted() {
-                if (StringUtils.isBlank(username) || StringUtils.isBlank(email)) {
+                if (StringUtils.isBlank(username) && StringUtils.isBlank(email)) {
+                    responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Username and Email is empty").asRuntimeException());
                     return;
                 }
                 UserGrpc userGrpc = userService.getUserInfoGrpc(username, email);

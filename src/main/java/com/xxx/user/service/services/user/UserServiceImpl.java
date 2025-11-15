@@ -102,6 +102,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(request, userEntity);
+        userEntity.setEmail(request.getEmail());
         userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
         RoleEntity roleEntity = roleRepository.findByCode("USER").orElse(null);
         if (roleEntity == null) {
@@ -117,8 +118,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public JwtGrpc loginUser(UserLoginGrpc request) {
-
-        return null;
+    public JwtGrpc loginUser(UserLoginGrpc request) throws JOSEException {
+        UserEntity userEntity = userRepository.findByUsernameOrEmail(request.getUsername(), request.getEmail()).orElse(null);
+        if (userEntity == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        if (!passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect password");
+        }
+        String token = tokenService.createToken(userEntity.getUsername(), userEntity.getEmail(), userEntity.getRoles().stream().map(RoleEntity::getCode).toList());
+        return JwtGrpc.newBuilder().setMessage("Success").setToken(token).build();
     }
 }

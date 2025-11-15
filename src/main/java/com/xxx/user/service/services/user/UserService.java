@@ -21,5 +21,5 @@ public interface UserService {
 
     JwtGrpc registerUser(UserRegisterGrpc request) throws JOSEException;
 
-    JwtGrpc loginUser(UserLoginGrpc request);
+    JwtGrpc loginUser(UserLoginGrpc request) throws JOSEException;
 }
