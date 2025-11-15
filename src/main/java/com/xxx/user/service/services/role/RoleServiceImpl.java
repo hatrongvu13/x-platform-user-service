@@ -59,26 +59,31 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void addUserRoleDefault(Long userid) {
-        UserEntity userEntity = userRepository.findById(userid).orElse(null);
-        if (userEntity == null) {
-            return;
-        }
-        RoleEntity roleEntity = roleRepository.findByCode("USER").orElse(null);
-        if (roleEntity == null) {
-            roleEntity = new RoleEntity();
-            roleEntity.setCode("USER");
-            roleEntity.setValue("USER");
-            PermissionEntity permissionEntity = new PermissionEntity();
-            permissionEntity.setValue("EDIT");
-            permissionEntity.setCode("EDIT");
-            PermissionEntity permissionEntity1 = new PermissionEntity();
-            permissionEntity1.setValue("VIEW");
-            permissionEntity1.setCode("VIEW");
-            roleEntity.setPermissions(Set.of(permissionEntity, permissionEntity1));
-        }
+        try {
+            UserEntity userEntity = userRepository.findById(userid).orElse(null);
+            if (userEntity == null) {
+                return;
+            }
+            RoleEntity roleEntity = roleRepository.findByCode("USER").orElse(null);
+            if (roleEntity == null) {
+                log.info("Add new user role default");
+                roleEntity = new RoleEntity();
+                roleEntity.setCode("USER");
+                roleEntity.setValue("USER");
+                PermissionEntity permissionEntity = new PermissionEntity();
+                permissionEntity.setValue("EDIT");
+                permissionEntity.setCode("EDIT");
+                PermissionEntity permissionEntity1 = new PermissionEntity();
+                permissionEntity1.setValue("VIEW");
+                permissionEntity1.setCode("VIEW");
+                roleEntity.setPermissions(Set.of(permissionEntity, permissionEntity1));
+            }
 
-        userEntity.setRoles(Set.of(roleEntity));
+            userEntity.setRoles(Set.of(roleEntity));
 
-        userRepository.save(userEntity);
+            userRepository.save(userEntity);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }

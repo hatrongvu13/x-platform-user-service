@@ -55,7 +55,8 @@ public class GrpcServerJwtInterceptor implements ServerInterceptor {
     private Object getGrpcServiceBeanByName(String serviceName) {
         Map<String, Object> beans = applicationContext.getBeansWithAnnotation(GrpcService.class);
         for (Object bean : beans.values()) {
-            if (bean.getClass().getSimpleName().equals(serviceName)) {
+            if (bean.getClass().getSuperclass().getSimpleName().equals(serviceName)
+                    || bean.getClass().getSimpleName().equals(serviceName) ) {
                 return bean;
             }
         }

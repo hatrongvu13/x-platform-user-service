@@ -1,22 +1,15 @@
 package com.xxx.user.service.grpc.services;
 
 import com.htv.proto.user.*;
-import com.nimbusds.jose.JOSEException;
 import com.xxx.user.service.annotation.PublicGrpc;
-import com.xxx.user.service.database.entity.RoleEntity;
-import com.xxx.user.service.database.entity.UserEntity;
-import com.xxx.user.service.database.repository.UserRepository;
-import com.xxx.user.service.services.role.RoleService;
-import com.xxx.user.service.services.token.TokenService;
+import com.xxx.user.service.services.user.UserService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.*;
 
@@ -25,16 +18,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase {
 
-    private final UserRepository userRepository;
-    private final TokenService tokenService;
-    private final PasswordEncoder passwordEncoder;
-    private final RoleService roleService;
+    private final UserService userService;
 
     @Override
     public StreamObserver<UserGrpc> getUserInfo(StreamObserver<UserInfoResponseGrpc> responseObserver) {
-        return new StreamObserver<UserGrpc>() {
-            UserEntity userEntity = null;
-
+        return new StreamObserver<>() {
+            String username;
+            String email;
             @Override
             public void onNext(UserGrpc userGrpc) {
                 if (StringUtils.isBlank(userGrpc.getUsername()) && StringUtils.isBlank(userGrpc.getEmail())) {
@@ -42,13 +32,8 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
                             .withDescription("Username and Email is empty").asRuntimeException());
                     return;
                 }
-
-                userEntity = userRepository.findByUsernameOrEmail(userGrpc.getUsername(), userGrpc.getEmail()).orElse(null);
-                if (Objects.isNull(userEntity)) {
-                    responseObserver.onError(Status.NOT_FOUND
-                            .withDescription("User not found")
-                            .asRuntimeException());
-                }
+                username = userGrpc.getUsername();
+                email = userGrpc.getEmail();
             }
 
             @Override
@@ -59,15 +44,11 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
 
             @Override
             public void onCompleted() {
-                if (Objects.isNull(userEntity)) {
+                if (StringUtils.isBlank(username) || StringUtils.isBlank(email)) {
                     return;
                 }
-                UserGrpc userGrpc = UserGrpc.newBuilder()
-                        .setId(userEntity.getId())
-                        .setUsername(userEntity.getUsername())
-                        .setEmail(userEntity.getEmail())
-                        .setFullName(userEntity.getFullName())
-                        .build();
+                UserGrpc userGrpc = userService.getUserInfoGrpc(username, email);
+
                 UserInfoResponseGrpc userInfoResponseGrpc = UserInfoResponseGrpc.newBuilder()
                         .addData(userGrpc)
                         .build();
@@ -79,7 +60,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
 
     @Override
     public StreamObserver<UserInfoGrpc> getUsersInfo(StreamObserver<UserInfoResponseGrpc> responseObserver) {
-        return new StreamObserver<UserInfoGrpc>() {
+        return new StreamObserver<>() {
 
             final List<String> usernames = new ArrayList<>();
             final List<String> emails = new ArrayList<>();
@@ -107,23 +88,20 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
 
             @Override
             public void onCompleted() {
-                List<UserEntity> userEntities = userRepository.findAllByUsernameInOrEmailIn(usernames, emails).orElse(new ArrayList<>());
-                if (CollectionUtils.isNotEmpty(userEntities)) {
-                    responseObserver.onError(Status.NOT_FOUND.withDescription("User not found").asRuntimeException());
-                    responseObserver.onCompleted();
+                if (CollectionUtils.isEmpty(usernames) || CollectionUtils.isEmpty(emails)) {
+                    responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("User info username and email is empty").asRuntimeException());
+                    return;
                 }
-                List<UserGrpc> userGrpcs = userEntities.stream().map(userEntity ->
-                        UserGrpc.newBuilder()
-                                .setId(userEntity.getId())
-                                .setFullName(userEntity.getFullName())
-                                .setUsername(userEntity.getUsername())
-                                .setEmail(userEntity.getEmail())
-                                .build()).toList();
-                responseObserver.onNext(UserInfoResponseGrpc.newBuilder()
-                        .setMessage("User info grpc completed")
-                        .setStatus("success")
-                        .addAllData(userGrpcs)
-                        .build());
+                try {
+                    List<UserGrpc> usersInfo = userService.getUsersInfoGrpc(usernames, emails);
+                    responseObserver.onNext(UserInfoResponseGrpc.newBuilder()
+                            .setMessage("User info grpc completed")
+                            .setStatus("success")
+                            .addAllData(usersInfo)
+                            .build());
+                } catch (Exception e) {
+                    responseObserver.onError(e);
+                }
                 responseObserver.onCompleted();
             }
         };
@@ -131,30 +109,16 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
 
     @PublicGrpc
     @Override
-    @Transactional
     public void registerUser(UserRegisterGrpc request, StreamObserver<JwtGrpc> responseObserver) {
         if (StringUtils.isBlank(request.getUsername()) && StringUtils.isBlank(request.getEmail())) {
             responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("UserRegisterGrpc username and email is empty").asRuntimeException());
             return;
         }
 
-        if (userRepository.existsByUsername(request.getUsername()) || userRepository.existsByEmail(request.getEmail())) {
-            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("UserRegisterGrpc username and email already exist").asRuntimeException());
-            return;
-        }
-
-        UserEntity userEntity = new UserEntity();
-        userEntity.setUsername(request.getUsername());
-        userEntity.setEmail(request.getEmail());
-        userEntity.setFullName(request.getFullName());
-        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(userEntity);
-
-        roleService.addUserRoleDefault(userEntity.getId());
-
         try {
-            responseObserver.onNext(JwtGrpc.newBuilder().setToken(tokenService.createToken(request.getUsername(), request.getEmail(), Collections.singletonList("USER"))).build());
-        } catch (JOSEException e) {
+            JwtGrpc jwtGrpc = userService.registerUser(request);
+            responseObserver.onNext(jwtGrpc);
+        } catch (Exception e) {
             responseObserver.onError(e);
         }
         responseObserver.onCompleted();
@@ -169,25 +133,12 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
                     .asRuntimeException());
             return;
         }
-        UserEntity userEntity = userRepository.findByUsernameOrEmail(request.getUsername(), request.getEmail()).orElse(null);
-        if (Objects.isNull(userEntity)) {
-            responseObserver.onError(Status.NOT_FOUND.withDescription("User not found").asRuntimeException());
-            return;
-        }
 
-        if (passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
-            try {
-                responseObserver.onNext(JwtGrpc.newBuilder()
-                        .setMessage("User login success")
-                        .setToken(tokenService.createToken(userEntity.getUsername(),
-                                userEntity.getEmail(),
-                                userEntity.getRoles()
-                                        .stream().map(RoleEntity::getCode)
-                                        .toList()))
-                        .build());
-            } catch (JOSEException e) {
-                responseObserver.onError(e);
-            }
+        try {
+            JwtGrpc jwtGrpc = userService.loginUser(request);
+            responseObserver.onNext(jwtGrpc);
+        } catch (Exception e) {
+            responseObserver.onError(e);
         }
 
         responseObserver.onCompleted();
