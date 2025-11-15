@@ -1,16 +1,21 @@
 package com.xxx.user.service.services.role;
 
+import com.google.protobuf.ProtocolStringList;
+import com.htv.proto.user.RoleGrpc;
 import com.xxx.user.service.database.entity.PermissionEntity;
 import com.xxx.user.service.database.entity.RoleEntity;
 import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.RoleRepository;
 import com.xxx.user.service.database.repository.UserRepository;
+import io.grpc.Status;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -85,5 +90,19 @@ public class RoleServiceImpl implements RoleService {
         } catch (Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<RoleGrpc> getRoleByUsername(ProtocolStringList usernameList) {
+        UserEntity userEntity = userRepository.findByUsername(usernameList.get(0)).orElse(null);
+        if (userEntity == null) {
+            throw Status.NOT_FOUND.withDescription("User not found").asRuntimeException();
+        }
+        return userEntity.getRoles().stream().map(item -> RoleGrpc.newBuilder()
+                .setId(item.getId())
+                .setCode(item.getCode())
+                .setValue(item.getValue())
+                .build()).toList();
     }
 }
