@@ -2,6 +2,7 @@ package com.xxx.user.service.services.role;
 
 import com.google.protobuf.ProtocolStringList;
 import com.htv.proto.user.RoleGrpc;
+import com.htv.proto.user.RolesByUserGrpc;
 import com.xxx.user.service.database.entity.PermissionEntity;
 import com.xxx.user.service.database.entity.RoleEntity;
 import com.xxx.user.service.database.entity.UserEntity;
@@ -10,13 +11,12 @@ import com.xxx.user.service.database.repository.UserRepository;
 import io.grpc.Status;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -94,8 +94,8 @@ public class RoleServiceImpl implements RoleService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<RoleGrpc> getRoleByUsername(ProtocolStringList usernameList) {
-        UserEntity userEntity = userRepository.findByUsername(usernameList.get(0)).orElse(null);
+    public List<RoleGrpc> getRoleByUsername(String username) {
+        UserEntity userEntity = userRepository.findByUsername(username).orElse(null);
         if (userEntity == null) {
             throw Status.NOT_FOUND.withDescription("User not found").asRuntimeException();
         }
@@ -104,5 +104,29 @@ public class RoleServiceImpl implements RoleService {
                 .setCode(item.getCode())
                 .setValue(item.getValue())
                 .build()).toList();
+    }
+
+    @Override
+    public List<RolesByUserGrpc> getRolesByUsername(List<String> usernames) {
+        List<UserEntity> userEntities = userRepository.findAllByUsernameIn(usernames).orElse(null);
+        if (CollectionUtils.isEmpty(userEntities)) {
+            throw Status.NOT_FOUND.withDescription("User not found").asRuntimeException();
+        }
+
+        List<RolesByUserGrpc> result = new ArrayList<>();
+        for (UserEntity userEntity : userEntities) {
+            RolesByUserGrpc.Builder builder = RolesByUserGrpc.newBuilder();
+            builder.setUsername(userEntity.getUsername());
+            if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
+                builder.addAllRole(userEntity.getRoles().stream().map(item -> RoleGrpc.newBuilder()
+                        .setId(item.getId())
+                        .setCode(item.getCode())
+                        .setValue(item.getValue())
+                        .build()).collect(Collectors.toList()));
+            }
+            result.add(builder.build());
+        }
+
+        return result;
     }
 }
