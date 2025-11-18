@@ -1,6 +1,5 @@
 package com.xxx.user.service.services.role;
 
-import com.google.protobuf.ProtocolStringList;
 import com.htv.proto.user.RoleGrpc;
 import com.htv.proto.user.RolesByUserGrpc;
 import com.xxx.user.service.database.entity.PermissionEntity;

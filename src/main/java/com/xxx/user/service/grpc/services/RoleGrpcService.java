@@ -77,6 +77,7 @@ public class RoleGrpcService extends RoleGrpcServiceGrpc.RoleGrpcServiceImplBase
                             .build());
                 } catch (Exception e) {
                     responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage()).asException());
+                    return;
                 }
                 responseObserver.onCompleted();
             }
