@@ -121,6 +121,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
             responseObserver.onNext(jwtGrpc);
         } catch (Exception e) {
             responseObserver.onError(e);
+            return;
         }
         responseObserver.onCompleted();
     }
@@ -140,6 +141,7 @@ public class UserGrpcService extends UserGrpcServiceGrpc.UserGrpcServiceImplBase
             responseObserver.onNext(jwtGrpc);
         } catch (Exception e) {
             responseObserver.onError(e);
+            return;
         }
 
         responseObserver.onCompleted();
