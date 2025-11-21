@@ -17,6 +17,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Boolean existsByEmail(String email);
     Optional<List<UserEntity>> findAllByUsernameInOrEmailIn(List<String> usernames, List<String> emails);
     Optional<UserEntity> findByUsername(String username);
+    @EntityGraph(attributePaths = "roles")
     @Query("SELECT u FROM UserEntity u WHERE u.username = :username OR u.email = :email")
     Optional<UserEntity> findByUsernameOrEmail(@Param("username") String username,@Param("email") String email);
     @EntityGraph(attributePaths = "roles")
