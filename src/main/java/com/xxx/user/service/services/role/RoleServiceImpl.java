@@ -29,6 +29,7 @@ public class RoleServiceImpl implements RoleService {
     public void initRole() {
         if (!roleRepository.findAll().isEmpty()) {
             log.info("Ignore init role");
+            return;
         }
         log.info("Init role");
         PermissionEntity permissionEntity = new PermissionEntity();
