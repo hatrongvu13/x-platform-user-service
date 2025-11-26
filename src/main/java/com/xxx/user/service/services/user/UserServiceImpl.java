@@ -13,6 +13,7 @@ import com.xxx.user.service.database.entity.UserEntity;
 import com.xxx.user.service.database.repository.RoleRepository;
 import com.xxx.user.service.database.repository.UserRepository;
 import com.xxx.user.service.services.token.TokenService;
+import io.grpc.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -83,7 +84,7 @@ public class UserServiceImpl implements UserService {
     public List<UserGrpc> getUsersInfoGrpc(List<String> usernames, List<String> emails) {
         List<UserEntity> userEntities = userRepository.findAllByUsernameInOrEmailIn(usernames, emails).orElse(new ArrayList<>());
         if (userEntities.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw Status.NOT_FOUND.withDescription("User not found").asRuntimeException();
         }
         return userEntities.stream().map(item -> UserGrpc.newBuilder()
                 .setId(item.getId())
@@ -97,7 +98,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public JwtGrpc registerUser(UserRegisterGrpc request) throws JOSEException {
         if (userRepository.existsByUsername(request.getUsername()) || userRepository.existsByEmail(request.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username or email already in use");
+            throw Status.INVALID_ARGUMENT.withDescription("Username or email already in use").asRuntimeException();
         }
 
         UserEntity userEntity = new UserEntity();
@@ -121,10 +122,10 @@ public class UserServiceImpl implements UserService {
     public JwtGrpc loginUser(UserLoginGrpc request) throws JOSEException {
         UserEntity userEntity = userRepository.findByUsernameOrEmail(request.getUsername(), request.getEmail()).orElse(null);
         if (userEntity == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+            throw Status.NOT_FOUND.withDescription("Your account is not found").asRuntimeException();
         }
         if (!passwordEncoder.matches(request.getPassword(), userEntity.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect password");
+            throw Status.INVALID_ARGUMENT.withDescription("Incorrect password or email").asRuntimeException();
         }
         String token = tokenService.createToken(userEntity.getUsername(), userEntity.getEmail(), userEntity.getRoles().stream().map(RoleEntity::getCode).toList());
         return JwtGrpc.newBuilder().setMessage("Success").setToken(token).build();
