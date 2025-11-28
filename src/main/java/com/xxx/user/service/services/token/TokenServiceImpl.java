@@ -2,7 +2,7 @@ package com.xxx.user.service.services.token;
 
 import com.nimbusds.jose.JOSEException;
 import com.xxx.user.service.data.user.UserAuthentication;
-import com.xxx.user.service.utils.security.TokenProvider;
+import com.xxx.user.service.utils.security.jwt.rsa.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

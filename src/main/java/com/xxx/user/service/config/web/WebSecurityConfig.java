@@ -1,7 +1,7 @@
 package com.xxx.user.service.config.web;
 
 import com.xxx.user.service.config.properties.SecurityProperties;
-import com.xxx.user.service.utils.security.TokenProvider;
+import com.xxx.user.service.utils.security.jwt.rsa.TokenProvider;
 import com.xxx.user.service.utils.security.jwt.JwtAuthentication;
 import com.xxx.user.service.utils.security.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;

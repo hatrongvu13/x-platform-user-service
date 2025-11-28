@@ -1,7 +1,7 @@
 package com.xxx.user.service.utils.security.grpc;
 
 import com.xxx.user.service.annotation.PublicGrpc;
-import com.xxx.user.service.utils.security.TokenProvider;
+import com.xxx.user.service.utils.security.jwt.rsa.TokenProvider;
 import io.grpc.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

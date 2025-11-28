@@ -1,4 +1,4 @@
-package com.xxx.user.service.utils.security;
+package com.xxx.user.service.utils.security.jwt.rsa;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;

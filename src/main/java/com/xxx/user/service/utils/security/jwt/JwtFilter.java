@@ -1,6 +1,6 @@
 package com.xxx.user.service.utils.security.jwt;
 
-import com.xxx.user.service.utils.security.TokenProvider;
+import com.xxx.user.service.utils.security.jwt.rsa.TokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
