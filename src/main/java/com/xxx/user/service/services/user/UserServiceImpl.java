@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
         String token = tokenService.createToken(userEntity.getUsername(), userEntity.getEmail(), userEntity.getRoles().stream().map(RoleEntity::getCode).toList());
 
-        return JwtGrpc.newBuilder().setMessage("Success").setToken(token).build();
+        return JwtGrpc.newBuilder().setMessage("Success").setAccessToken(token).build();
     }
 
     @Override
@@ -128,6 +128,6 @@ public class UserServiceImpl implements UserService {
             throw Status.INVALID_ARGUMENT.withDescription("Incorrect password or email").asRuntimeException();
         }
         String token = tokenService.createToken(userEntity.getUsername(), userEntity.getEmail(), userEntity.getRoles().stream().map(RoleEntity::getCode).toList());
-        return JwtGrpc.newBuilder().setMessage("Success").setToken(token).build();
+        return JwtGrpc.newBuilder().setMessage("Success").setAccessToken(token).build();
     }
 }

@@ -22,7 +22,7 @@
         <protobuf.maven.plugin.version>0.6.1</protobuf.maven.plugin.version>
         <os.maven.plugin.version>1.7.1</os.maven.plugin.version>
         <grpc.spring.version>3.1.0.RELEASE</grpc.spring.version>
-        <protobuf.java.util.version>4.30.2</protobuf.java.util.version>
+        <protobuf.java.util.version>4.32.1</protobuf.java.util.version>
         <nimbus-jwt>10.2</nimbus-jwt>
         <commons-io>2.16.1</commons-io>
         <commons-lang3>3.18.0</commons-lang3>
